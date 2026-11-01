@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.JupyterIDE" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">#00C853</item>
+        <item name="android:statusBarColor">#0D1117</item>
+        <item name="android:navigationBarColor">#0D1117</item>
+        <item name="android:windowBackground">#0D1117</item>
+    </style>
+</resources>

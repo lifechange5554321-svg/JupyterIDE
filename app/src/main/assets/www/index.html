@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fa" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Jupyter IDE</title>
+  <link rel="stylesheet" href="vendor/codemirror/lib/codemirror.css" />
+  <link rel="stylesheet" href="vendor/codemirror/addon/hint/show-hint.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="header" id="app-header">
+      <div class="brand">
+        <span class="logo">◉</span>
+        <div>
+          <div class="title">Jupyter IDE</div>
+          <div class="subtitle" id="header-sub">Python • Fast boot</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-add-code" class="btn btn-ghost">+ Code</button>
+        <button id="btn-add-md" class="btn btn-ghost">+ MD</button>
+        <button id="btn-run-all" class="btn btn-primary">▶</button>
+        <button id="btn-menu" class="btn btn-ghost">☰</button>
+      </div>
+    </header>
+    <div id="status" class="status">Starting…</div>
+    <main id="notebook" class="notebook"></main>
+    <div id="keybar" class="keybar">
+      <button data-key="ctrl" class="kbtn modifier" id="mod-ctrl">Ctrl</button>
+      <button data-key="shift" class="kbtn modifier" id="mod-shift">Shift</button>
+      <button data-key="Tab" class="kbtn">Tab</button>
+      <button data-key="Escape" class="kbtn">Esc</button>
+      <button data-key="ArrowLeft" class="kbtn">←</button>
+      <button data-key="ArrowUp" class="kbtn">↑</button>
+      <button data-key="ArrowDown" class="kbtn">↓</button>
+      <button data-key="ArrowRight" class="kbtn">→</button>
+      <button data-key="Home" class="kbtn">Home</button>
+      <button data-key="End" class="kbtn">End</button>
+      <button data-key="select-all" class="kbtn action">All</button>
+      <button data-key="copy" class="kbtn action">Copy</button>
+      <button data-key="cut" class="kbtn action">Cut</button>
+      <button data-key="paste" class="kbtn action">Paste</button>
+      <button data-key="(" class="kbtn">(</button>
+      <button data-key=")" class="kbtn">)</button>
+      <button data-key="[" class="kbtn">[</button>
+      <button data-key="]" class="kbtn">]</button>
+      <button data-key="{" class="kbtn">{</button>
+      <button data-key="}" class="kbtn">}</button>
+      <button data-key=":" class="kbtn">:</button>
+      <button data-key="=" class="kbtn">=</button>
+      <button data-key="_" class="kbtn">_</button>
+      <button data-key="'" class="kbtn">'</button>
+      <button data-key='"' class="kbtn">"</button>
+    </div>
+  </div>
+
+  <div id="app-menu" class="app-menu hidden">
+    <button data-menu="file-open">Open file</button>
+    <button data-menu="file-save">Save notebook</button>
+    <button data-menu="file-save-as">Save as…</button>
+    <button data-menu="file-save-cell">Save active cell</button>
+    <button data-menu="migrate">Move assets folder…</button>
+    <button data-menu="browse">Browse assets</button>
+    <button data-menu="offline">Offline runtime</button>
+    <button data-menu="durable">Durable folder</button>
+    <button data-menu="packages">Packages</button>
+    <button data-menu="finance">Finance checklist</button>
+    <button data-menu="settings">Settings</button>
+  </div>
+
+  <div id="ctx-menu" class="ctx-menu hidden">
+    <button data-ctx="copy">Copy</button>
+    <button data-ctx="cut">Cut</button>
+    <button data-ctx="paste">Paste</button>
+    <button data-ctx="select-all">Select all</button>
+  </div>
+
+  <div id="package-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Packages</h3>
+      <p class="hint">Loads only on import/install. Local first.</p>
+      <input id="pkg-input" type="text" placeholder="e.g. yfinance" />
+      <div class="modal-actions">
+        <button id="pkg-cancel" class="btn btn-ghost">Close</button>
+        <button id="pkg-install" class="btn btn-primary">Install / Load</button>
+      </div>
+      <pre id="pkg-log" class="pkg-log"></pre>
+      <pre id="pkg-local-list" class="pkg-log"></pre>
+    </div>
+  </div>
+
+  <div id="finance-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Finance toolkit</h3>
+      <p class="hint">Download once. Tick = in local assets.</p>
+      <div id="finance-list" class="finance-list"></div>
+      <div class="modal-actions"><button id="finance-close" class="btn btn-primary">Close</button></div>
+    </div>
+  </div>
+
+  <div id="browse-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Browse assets</h3>
+      <p class="hint" id="browse-root-hint"></p>
+      <div class="browse-tabs">
+        <button class="browse-tab active" data-folder="packages">packages</button>
+        <button class="browse-tab" data-folder="fonts">fonts</button>
+        <button class="browse-tab" data-folder="data">data</button>
+        <button class="browse-tab" data-folder="notebooks">notebooks</button>
+        <button class="browse-tab" data-folder="root">root</button>
+      </div>
+      <pre id="browse-list" class="pkg-log browse-list"></pre>
+      <div class="modal-actions"><button id="browse-close" class="btn btn-primary">Close</button></div>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content settings">
+      <h3>Settings</h3>
+      <label class="set-row">Theme
+        <select id="set-theme"><option value="dark">Dark</option><option value="light">Light</option></select>
+      </label>
+      <label class="set-row">Code theme
+        <select id="set-code-theme">
+            <option value="vscode-dark">VS Code Dark+</option>
+            <option value="jupyteride">Jupyter IDE</option>
+            <option value="monokai">Monokai</option>
+            <option value="dracula">Dracula</option>
+            <option value="solarized-light">Solarized Light</option>
+            <option value="github-light">GitHub Light</option>
+          </select>
+      </label>
+      <label class="set-row">Code font
+        <select id="set-code-font">
+          <option value="monospace">System monospace</option>
+          <option value="JetBrains Mono, monospace">JetBrains Mono</option>
+          <option value="Fira Code, monospace">Fira Code</option>
+        </select>
+      </label>
+      <label class="set-row">Persian font
+        <select id="set-fa-font">
+          <option value="system-ui, sans-serif">System</option>
+          <option value="Tahoma, sans-serif">Tahoma</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+      <label class="set-row">Custom font
+        <select id="set-custom-font-file"><option value="">—</option></select>
+      </label>
+      <button id="btn-add-font" class="btn btn-ghost" style="width:100%;margin-bottom:10px">+ Add font</button>
+      <input id="font-file-input" type="file" accept=".ttf,.otf,.woff,.woff2" class="hidden" />
+      <label class="set-row">Code size
+        <input id="set-code-size" type="range" min="12" max="20" value="14" />
+        <span id="set-code-size-val">14</span>
+      </label>
+      <label class="set-row">Output size
+        <input id="set-out-size" type="range" min="11" max="18" value="13" />
+        <span id="set-out-size-val">13</span>
+      </label>
+      <label class="set-row check"><input id="set-indent-guides" type="checkbox" /> Indent guides</label>
+      <label class="set-row check"><input id="set-line-wrap" type="checkbox" /> Text wrap</label>
+      <p class="hint" id="data-root-hint"></p>
+      <div class="modal-actions"><button id="settings-close" class="btn btn-primary">Done</button></div>
+    </div>
+  </div>
+
+  
+  <div id="save-modal" class="save-backdrop hidden">
+    <div class="save-sheet">
+      <h3 id="save-modal-title">Save notebook</h3>
+      <label>File name</label>
+      <input id="save-name" type="text" placeholder="notebook.ipynb" />
+      <label>Location</label>
+      <div class="save-path" id="save-path-display">Documents/JupyterIDE/notebooks/</div>
+      <div class="modal-actions">
+        <button id="save-browse" class="btn btn-ghost">Browse…</button>
+        <button id="save-cancel" class="btn btn-ghost">Cancel</button>
+        <button id="save-confirm" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="unsaved-modal" class="save-backdrop hidden">
+    <div class="save-sheet">
+      <h3>Unsaved changes</h3>
+      <p class="hint">Notebook has changes that are not saved to a file.</p>
+      <div class="modal-actions">
+        <button id="unsaved-discard" class="btn btn-ghost">Close without saving</button>
+        <button id="unsaved-cancel" class="btn btn-ghost">Cancel</button>
+        <button id="unsaved-save" class="btn btn-primary">Save…</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+  <script src="vendor/codemirror/lib/codemirror.js"></script>
+  <script src="vendor/codemirror/mode/python/python.js"></script>
+  <script src="vendor/codemirror/addon/edit/closebrackets.js"></script>
+  <script src="vendor/codemirror/addon/edit/matchbrackets.js"></script>
+  <script src="vendor/codemirror/addon/hint/show-hint.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
